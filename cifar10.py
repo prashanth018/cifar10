@@ -3,6 +3,8 @@ from keras.models import Model
 from keras.optimizers import Adam
 from keras.datasets import cifar10
 from keras.utils import to_categorical
+import matplotlib.pyplot as plt
+import numpy as np
 
 NUM_CLASSES = 10
 (x_train, y_train), (x_test, y_test) = cifar10.load_data()
@@ -47,11 +49,33 @@ model.summary()
 opt = Adam(lr=0.0005)
 model.compile(loss='categorical_crossentropy', optimizer=opt, metrics=['accuracy'])
 
-model.fit(x_train, y_train, batch_size=32, epochs=10, shuffle=True)
+# model.fit(x_train, y_train, batch_size=32, epochs=10, shuffle=True)
 
-score = model.evaluate(x_test, y_test, batch_size=1000)
+# score = model.evaluate(x_test, y_test, batch_size=1000)
 
-# model.load_weights('cifar - Copy.h5')
-model.save_weights("cifar.h5")
+model.load_weights("./model/cifar_batch32.h5")
+# model.save_weights("model/cifar32.h5")
 
-print("%s: %.2f%%" % (model.metrics_names[1], score[1]*100))
+# print("%s: %.2f%%" % (model.metrics_names[1], score[1] * 100))
+
+CLASSES = np.array(['airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck'])
+
+preds = model.predict(x_test)
+preds_single = CLASSES[np.argmax(preds, axis=-1)]
+actual_single = CLASSES[np.argmax(y_test, axis=-1)]
+
+n_to_show = 10
+indices = np.random.choice(range(len(x_test)), n_to_show)
+
+fig = plt.figure(figsize=(15, 3))
+fig.subplots_adjust(hspace=0.4, wspace=0.4)
+
+for i, idx in enumerate(indices):
+    img = x_test[idx]
+    ax = fig.add_subplot(1, n_to_show, i + 1)
+    ax.axis('off')
+    ax.text(0.5, -0.35, 'pred = ' + str(preds_single[idx]), fontsize=10, ha='center', transform=ax.transAxes)
+    ax.text(0.5, -0.7, 'act = ' + str(actual_single[idx]), fontsize=10, ha='center', transform=ax.transAxes)
+    ax.imshow(img)
+
+plt.savefig('new_img.png', dpi=100)
